@@ -1,1 +1,98 @@
 This is Group10 
+
+05_s241005@kashiwanoha.ed.jp
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>クイズゲーム</title>
+</head>
+<body>
+  <font face="MS P明朝">
+  <div id="quiz">
+    <div id="question">Loading...</div>
+    <div id="options"></div>
+  </div>
+
+    <button id="darkmodeBtn">ダークモード</button>
+    <style>
+      body {
+        background-color: white;
+        color: black;
+      }
+      body.dark {
+        background-color: black;
+        color: white;
+      }
+    </style>
+    
+  <script>
+    let questions = [];
+    let currentIndex = 0;
+
+    async function fetchQuestions() {
+      const res = await fetch('https://opentdb.com/api.php?amount=10&difficulty=medium&type=multiple');
+      const data = await res.json();
+      questions = data.results;
+      showQuestion();
+    }
+
+    function decodeHTMLEntities(text) {
+      const textarea = document.createElement("textarea");
+      textarea.innerHTML = text;
+      return textarea.value;
+    }
+
+    function showQuestion() {
+      if (currentIndex >= questions.length) {
+        document.getElementById('quiz').innerHTML = '<h2>クイズ終了！</h2>';
+        return;
+      }
+
+      const q = questions[currentIndex];
+      const questionText = decodeHTMLEntities(q.question);
+      const options = [...q.incorrect_answers, q.correct_answer];
+      shuffleArray(options);
+
+      document.getElementById('question').textContent = questionText;
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = '';
+
+      options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = decodeHTMLEntities(option);
+        btn.onclick = () => {
+          if (option === q.correct_answer) {
+            alert('正解！');
+          } else {
+            alert('不正解！正解は「' + decodeHTMLEntities(q.correct_answer) + '」です');
+          }
+          currentIndex++;
+          showQuestion();
+        };
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    fetchQuestions();
+
+    
+      // ダークモード切り替えボタンの設定
+      const darkmodeBtn = document.getElementById('darkmodeBtn');
+      darkmodeBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+      });
+
+    
+  </script>
+</body>
+</html>
